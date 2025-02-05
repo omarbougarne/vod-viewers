@@ -10,7 +10,7 @@ export const registerUser = async (req, res) => {
     console.log(user);
     res.status(200).json(user);
   } catch (error) {
-    return res.status(400).send(error);
+    console.log(res.status(400).send(error));
   }
 };
 
@@ -20,6 +20,9 @@ export const loginUser = async (req, res) => {
     const token = await userService.loginUser(email, password);
     res.status(200).json(token);
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    console.log(error);
+res.status(400).send(error.message);
+
+
   }
 };

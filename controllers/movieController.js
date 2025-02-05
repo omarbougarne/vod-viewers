@@ -1,96 +1,54 @@
+import { getMovies, getMovieById, createMovie, updateMovie, deleteMovie } from '../services/movieService.js';
 
-import cloudinary from 'cloudinary'
-import { Movie, validateMovie } from'../models/movieModel.js';
-import mongoose from 'mongoose'
-
-
-const getMovies = async (req, res) => {
-    try {
-        const movies = await Movie.find(); 
-        res.status(200).send(movies);
-    } catch (err) {
-        res.status(500).send({ message: 'Error fetching movies' });
-    }
+const getMoviesController = async (req, res) => {
+  try {
+    const movies = await getMovies();
+    res.status(200).json(movies);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 };
 
-const getMovie = async (req, res) => {
-    try {
-        const { id } = req.params; 
-        const movie = await Movie.findOne({ _id: id });
-        if (!movie) {
-            return res.status(404).send({ message: "Movie not found" });
-        }
-        res.status(200).send(movie);
-    } catch (err) {
-        res.status(500).send({ error: err.message });
-    }
+const getMovieController = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const movie = await getMovieById(id);
+    if (!movie) return res.status(404).json({ message: 'Movie not found' });
+    res.status(200).json(movie);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 };
 
+const createMovieController = async (req, res) => {
+  try {
+    // if (!req.file) {
+    //   return res.status(400).json({ message: 'Image is required' });
+    // }
 
-const createMovie = async (req, res) => {
-    try {
-        
-        if (!req.file) {
-            return res.status(400).json({ message: 'Image is required' });
-        }
-
-        const { title, genre, description, releaseDate, videoUrl } = req.body;
-
-        const newMovie = {
-            title,
-            genre,
-            description,
-            releaseDate,
-        };
-
-        
-        const savedMovie = await Movie.create(newMovie);
-        res.status(201).json(savedMovie);
-    } catch (error) {
-        res.status(500).json({ message: 'Error creating movie', error });
-    }
+    const savedMovie = await createMovie(req.body);
+    res.status(201).json(savedMovie);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 };
 
-
-
-const updateMovie = async (req, res) => {
-    const { error } = validateMovie(req.body);
-    if (error) return res.status(400).send({ message: error.details[0].message });
-
-    try {
-        const movie = await Movie.findById(req.params.id);
-        if (!movie) return res.status(404).send({ message: 'Movie not found' });
-
-        
-        if (movie.createdBy.toString() !== req.user._id)
-            return res.status(403).send({ message: 'Unauthorized to update this movie' });
-
-        Object.assign(movie, req.body);  
-        await movie.save();
-        res.status(200).send(movie);
-    } catch (err) {
-        res.status(500).send({ message: 'Error updating movie' });
-    }
+const updateMovieController = async (req, res) => {
+  try {
+    const updatedMovie = await updateMovie(req.params.id, req.body);
+    res.status(200).json(updatedMovie);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 };
 
-
-const deleteMovie = async (req, res) => {
-    try {
-        const movie = await Movie.findById(req.params.id);
-        if (!movie) return res.status(404).send({ message: 'Movie not found' });
-
-        
-        if (movie.createdBy.toString() !== req.user._id)
-            return res.status(403).send({ message: 'Unauthorized to delete this movie' });
-
-        await movie.remove();
-        res.status(200).send({ message: 'Movie deleted successfully' });
-    } catch (err) {
-        res.status(500).send({ message: 'Error deleting movie' });
-    }
+const deleteMovieController = async (req, res) => {
+  try {
+    const response = await deleteMovie(req.params.id);
+    res.status(200).json(response);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 };
 
-export { getMovies, createMovie, updateMovie, deleteMovie, getMovie };
-
-
-
+export { getMoviesController, getMovieController, createMovieController, updateMovieController, deleteMovieController };

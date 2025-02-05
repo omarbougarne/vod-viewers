@@ -7,7 +7,12 @@ const userSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
-    password: { type: String, required: true }
+    password: { type: String, required: true },
+    role: {
+      type: String,
+      enum: ['user', 'admin'],
+      default: 'user'
+    }
   },
   {
     timestamps: true
@@ -29,7 +34,8 @@ const validateUser = (user) => {
   const schema = Joi.object({
     name: Joi.string().required(),
     email: Joi.string().email().required(),
-    password: Joi.string().min(6).required()
+    password: Joi.string().min(6).required(),
+    role: Joi.string().valid('user', 'admin')
   });
 
   return schema.validate(user);
